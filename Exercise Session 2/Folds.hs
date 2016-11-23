@@ -17,14 +17,15 @@ foldInts fn base (x:xs) = fn x (foldInts fn base xs)
 
 myFoldl :: (b -> a -> b) -> b -> [a] -> b
 myFoldl fn base [] = base
-myFoldl fn base (x:xs) = fn (myFoldl fn base xs) x  
+myFoldl fn base (x:xs) = let zq = fn base x
+                         in myFoldl fn zq xs  
 
 myFoldr :: (a -> b -> b) -> b -> [a] -> b
 myFoldr fn base [] = base
 myFoldr fn base (x:xs) = fn x (myFoldr fn base xs)  
 
 readInBase :: Int -> [Int] -> Int
-readInBase base digits = error "not implemented"
+readInBase base digits = myFoldl (\x y -> base*x + y) 0 digits
 
 myMap :: (a -> b) -> [a] -> [b]
 myMap fn [] = []
