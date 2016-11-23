@@ -1,52 +1,72 @@
 
 module Template where
 
--- * Sequences
+-- * HTML
 -- ----------------------------------------------------------------------------
 
-class Sequence a where
-  prev :: a -> a
-  next :: a -> a
+-- Simple (X)HTML markup.
+data Attr = Attr String String
+  deriving (Eq,Show)
 
-instance Sequence Int where
-  prev x = x - 1 
-  next = (+) 1
+data HtmlElement
+  = HtmlString String                    -- Plain text.
+  | HtmlTag String [Attr] HtmlElements   -- Structured markup.
+  deriving (Eq, Show)
 
-instance Sequence Char where
-  prev = findNext (reverse ['a'..'z'])
-  next = findNext ['a'..'z']
+type HtmlElements = [HtmlElement]
 
-findNext :: [Char] -> Char -> Char
-findNext (x:y:xs) a
-    | x == a = y
-    | otherwise = findNext (y:xs) a
+example :: HtmlElement
+example =
+  HtmlTag "a" [Attr "href" "https://www.kuleuven.be/kuleuven/"]
+    [HtmlString "KU Leuven"]
 
-instance Sequence Bool where
-  prev = not
-  next = not
+-- HTML renderable class.
+class HTML a where
+  toHtml :: a -> HtmlElement
 
-class Sequence a => LeftBoundedSequence a where
-  firstElem :: a
+data Link =
+  Link
+    String  -- Link target.
+    String  -- Text to show.
+  deriving (Eq,Show)
 
-class Sequence a => RightBoundedSequence a where
-  lastElem :: a
+instance HTML Link where
+  toHtml (Link link text) = HtmlTag "a" [Attr "href" link] [HtmlString text]
 
-instance LeftBoundedSequence Int where
-  firstElem = error "Not implemented"
 
-instance LeftBoundedSequence Char where
-  firstElem = error "Not implemented"
+-- Input is a list of elements from the HTML class
+instance HTML a => HTML [a] where
+  toHtml list = HtmlTag "ul" [] (map (\x -> HtmlTag "li" [] [toHtml x]) list)
+ 
+-- The encoding of the following unordered list as an HtmlElement
+--   <ul>
+--   <li>Appels</li>
+--   <li>Bananas</li>
+--   <li>Oranges</li>
+--   </ul>
 
-instance LeftBoundedSequence Bool where
-  firstElem = error "Not implemented"
+exampleUL :: HtmlElement
+exampleUL = HtmlTag "ul" [] [HtmlTag "li" [] [HtmlString "Appels"], HtmlTag "li" [] [HtmlString "Bananas"], HtmlTag "li" [] [HtmlString "Oranges"]]
 
-instance RightBoundedSequence Int where
-  lastElem = error "Not implemented"
+data Adress =
+    Adress
+    String -- Firstname
+    String -- Lastname
+    [Email]
 
-instance RightBoundedSequence Char where
-  lastElem = error "Not implemented"
+data Email = Work String | Private String
 
-instance RightBoundedSequence Bool where
-  lastElem = error "Not implemented"
+data AddressBook = AdressBook [Adress]
+    
 
+myAddressBook :: AddressBook
+myAddressBook = AdressBook [Adress "Pieter-Jan" "Coenen" [Private "pieterjan.coenen@gmail.com", Work "pieterjan.student@kuleuven.be"], Adress "Yana" "Dimova" [Work "yanateeuh@jupiler.be"]]
+
+instance HTML AddressBook where
+  toHtml (AdressBook values) = toHtml values
+
+-- Only one email adress will be shown
+instance HTML Adress where
+  toHtml (Adress fn ln ((Work x):xs)) = HtmlTag "a" [Attr "href" ("mailto:" ++ x)] [HtmlString (fn ++ " " ++ ln)]
+  toHtml (Adress fn ln ((Private x):xs)) = HtmlTag "a" [Attr "href" ("mailto:" ++ x)] [HtmlString (fn ++ " " ++ ln)]
 
