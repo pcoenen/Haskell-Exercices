@@ -16,7 +16,7 @@ instance Sequence Char where
   prev = findNext (reverse ['a'..'z'])
   next = findNext ['a'..'z']
 
-findNext :: [Char] -> Char -> Char
+findNext :: String -> Char -> Char
 findNext (x:y:xs) a
     | x == a = y
     | otherwise = findNext (y:xs) a
@@ -32,21 +32,21 @@ class Sequence a => RightBoundedSequence a where
   lastElem :: a
 
 instance LeftBoundedSequence Int where
-  firstElem = error "Not implemented"
+  firstElem = minBound :: Int
 
 instance LeftBoundedSequence Char where
-  firstElem = error "Not implemented"
+  firstElem = 'a'
 
 instance LeftBoundedSequence Bool where
-  firstElem = error "Not implemented"
+  firstElem = False
 
 instance RightBoundedSequence Int where
-  lastElem = error "Not implemented"
+  lastElem = maxBound :: Int
 
 instance RightBoundedSequence Char where
-  lastElem = error "Not implemented"
+  lastElem = 'z'
 
 instance RightBoundedSequence Bool where
-  lastElem = error "Not implemented"
+  lastElem = True
 
 
