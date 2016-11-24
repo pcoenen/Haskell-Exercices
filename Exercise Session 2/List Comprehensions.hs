@@ -5,12 +5,9 @@ module Template where
 -- ----------------------------------------------------------------------------
 
 mapLC :: (a -> b) -> [a] -> [b]
-mapLC f = foldr ((:) . f) []
+mapLC fn list = [fn x | x <- list]
 
 filterLC :: (a -> Bool) -> [a] -> [a]
-filterLC f [] = []
-filterLC f (x:xs)
-    | f x = x : filterLC f xs
-    | otherwise = filterLC f xs
+filterLC pr list = [a | a <- list, pr a]
 
 
