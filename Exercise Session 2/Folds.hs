@@ -24,7 +24,9 @@ myFoldr fn base [] = base
 myFoldr fn base (x:xs) = fn x (myFoldr fn base xs)  
 
 readInBase :: Int -> [Int] -> Int
-readInBase base digits = error "not implemented"
+readInBase base digits = 
+  myFoldl horner 0 (reverse digits)
+  where horner x y = y + (x * base)
 
 myMap :: (a -> b) -> [a] -> [b]
 myMap fn [] = []
