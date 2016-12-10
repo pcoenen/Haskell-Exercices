@@ -14,11 +14,11 @@ int2let :: Int -> Char
 int2let n = chr (ord 'a' + n)
 
 shift :: Int -> Char -> Char
-shift i ' ' = ' '
-shift i c = int2let $ mod ((+) i (let2int c)) 26
+shift n ' ' = ' '
+shift n c = int2let (mod ((+n) . let2int $ c) 26)
 
 encode :: Int -> String -> String
-encode i = map (shift i)
+encode n x = map (shift n) x
 
 table :: [Float]
 table = [ 8.2, 1.5, 2.8, 4.3, 12.7, 2.2, 2.0, 6.1, 7.0, 0.2, 0.8, 4.0, 2.4
@@ -27,16 +27,22 @@ table = [ 8.2, 1.5, 2.8, 4.3, 12.7, 2.2, 2.0, 6.1, 7.0, 0.2, 0.8, 4.0, 2.4
 percent :: Int -> Int -> Float
 percent x y = (fromIntegral x) / (fromIntegral y) * 100
 
+amount :: Char -> String -> Int
+amount x [] = 0
+amount x (y:ys)
+    | x == y = 1 + (amount x ys)
+    | otherwise = amount x ys
+
 freqs :: String -> [Float]
-freqs = error "Not implemented"
+freqs s = [percent (amount l s) (length s) | l <- ['a'..'z']]
 
 chisqr :: [Float] -> [Float] -> Float
-chisqr = error "Not implemented"
+chisqr o e = sum [((oi - ei)**2) / ei| (oi,ei) <- zip o e]
 
 rotate :: Int -> [a] -> [a]
-rotate = error "Not implemented"
+rotate n l = (drop (length l - n) l) ++ (take (length l - n) l)
 
 crack :: String -> String
-crack = error "Not implemented"
+crack s = s --[ chisqr (rotate n (freqs s)) table | n <- [0..25] ]
 
 

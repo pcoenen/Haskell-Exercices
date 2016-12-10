@@ -1,4 +1,3 @@
-
 module Template where
 
 -- * Sequences
@@ -9,17 +8,18 @@ class Sequence a where
   next :: a -> a
 
 instance Sequence Int where
-  prev x = x - 1 
-  next = (+) 1
+  prev x = x - 1
+  next x = x + 1
 
 instance Sequence Char where
-  prev = findNext (reverse ['a'..'z'])
-  next = findNext ['a'..'z']
+  prev x = nextChar (reverse ['a'..x]) x
+  next x = nextChar [x .. 'z'] x
 
-findNext :: String -> Char -> Char
-findNext (x:y:xs) a
-    | x == a = y
-    | otherwise = findNext (y:xs) a
+nextChar :: [Char] -> Char -> Char
+
+nextChar (y:ys) x
+    | x == y = head ys
+    | otherwise = nextChar ys x
 
 instance Sequence Bool where
   prev = not

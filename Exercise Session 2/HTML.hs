@@ -31,42 +31,40 @@ data Link =
   deriving (Eq,Show)
 
 instance HTML Link where
-  toHtml (Link link text) = HtmlTag "a" [Attr "href" link] [HtmlString text]
+  toHtml (Link x y) = HtmlTag "a" [Attr "href" x] [HtmlString y]
 
-
--- Input is a list of elements from the HTML class
 instance HTML a => HTML [a] where
-  toHtml list = HtmlTag "ul" [] (map (\x -> HtmlTag "li" [] [toHtml x]) list)
- 
+  toHtml x  = HtmlTag "ul" [] [toHtml a | a <- x]
+
 -- The encoding of the following unordered list as an HtmlElement
 --   <ul>
 --   <li>Appels</li>
 --   <li>Bananas</li>
 --   <li>Oranges</li>
 --   </ul>
-
 exampleUL :: HtmlElement
-exampleUL = HtmlTag "ul" [] [HtmlTag "li" [] [HtmlString "Appels"], HtmlTag "li" [] [HtmlString "Bananas"], HtmlTag "li" [] [HtmlString "Oranges"]]
+exampleUL = HtmlTag "ul" [] [HtmlTag "li" [] [HtmlString "Appels"],HtmlTag "li" [] [HtmlString "Bananas"], HtmlTag "li" [] [HtmlString "Oranges"]]
 
-data Adress =
-    Adress
-    String -- Firstname
-    String -- Lastname
-    [Email]
+data Mail = Private String 
+    | Work String
+    deriving (Eq, Show)
 
-data Email = Work String | Private String
+data Adress = Ad String String [Mail]
+    deriving (Eq, Show)
 
-data AddressBook = AdressBook [Adress]
-    
+data AddressBook = Book [Adress]
+    deriving (Eq, Show)
 
 myAddressBook :: AddressBook
-myAddressBook = AdressBook [Adress "Pieter-Jan" "Coenen" [Private "pieterjan.coenen@gmail.com", Work "pieterjan.student@kuleuven.be"], Adress "Yana" "Dimova" [Work "yanateeuh@jupiler.be"]]
+myAddressBook = Book [Ad "Jan" "Claes" [Private "jan@private.fic", Work "jan@work.fic"], Ad "Lien" "Bosmans" [Private "lien@home.fic", Work "lien@job.fic"]]
 
 instance HTML AddressBook where
-  toHtml (AdressBook values) = toHtml values
+  toHtml x = error "Not implemented"
 
--- Only one email adress will be shown
-instance HTML Adress where
-  toHtml (Adress fn ln ((Work x):xs)) = HtmlTag "a" [Attr "href" ("mailto:" ++ x)] [HtmlString (fn ++ " " ++ ln)]
-  toHtml (Adress fn ln ((Private x):xs)) = HtmlTag "a" [Attr "href" ("mailto:" ++ x)] [HtmlString (fn ++ " " ++ ln)]
+renderElement :: HtmlElement -> String
+renderElement = error "Not implemented"
+
+render :: HTML a => a -> String
+render = renderElement . toHtml
+
 

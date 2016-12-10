@@ -3,10 +3,11 @@ module Template where
 
 -- * List Comprehensions
 -- ----------------------------------------------------------------------------
+
 mapLC :: (a -> b) -> [a] -> [b]
-mapLC f l = [f n | n <- l]
+mapLC f list = [f x | x <- list]
 
 filterLC :: (a -> Bool) -> [a] -> [a]
-filterLC f l = [n | n <- l, f n]    
+filterLC f list = [x | x <- list, f x == True]
 
 
