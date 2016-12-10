@@ -1,25 +1,14 @@
+
 module Template where
 
 -- * Exercise 5: Prime Numbers
 -- ----------------------------------------------------------------------------
 
 sieve :: Int -> [Int]
+sieve m = removeM [2..m]
 
-sieve m = deleteMul [2..m]
-
-deleteMul :: [Int] -> [Int]
-
-deleteMul [] = []
-
-deleteMul (x:xs) = x : (deleteMul (deleteMultiplicates x xs))
-
-deleteMultiplicates :: Int -> [Int] -> [Int]
-
-deleteMultiplicates x [] = []
-    
-deleteMultiplicates x (y:ys)
-    | mod y x == 0 = deleteMultiplicates x ys
-    | otherwise = y : (deleteMultiplicates x ys)
+removeM [] = []
+removeM (x:xs) = x : removeM [e | e <- xs, mod e x /= 0]
 
 -- -------------------------
 -- Some useful functions
@@ -35,8 +24,14 @@ floorMono = floor
 -- -------------------------
 
 floorSquare :: Int -> Int
-floorSquare n = error "Not implemented"
+floorSquare = floorMono . sqrtMono . i2d
 
 fastSieve :: Int -> [Int]
-fastSieve n = error "Not implemented"
+fastSieve n = fastRemoveM [2..n] n
+
+fastRemoveM [] n = []
+fastRemoveM (x:xs) n
+    | x > floorSquare n = (x:xs)
+    | otherwise = x : fastRemoveM  [e | e <- xs, mod e x /= 0] n
+
 
