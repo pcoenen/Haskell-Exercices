@@ -1,4 +1,3 @@
-
 module Template where
 
 -- * Pascal's Triangle
