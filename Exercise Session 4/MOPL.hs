@@ -74,4 +74,4 @@ execute2 s (p:ps)
     | Print x <- p = do
         print $ evalTerm s x
         execute2 s ps
-    | Ass v t <- p = execute2 (execPure s [p]) ps
+    | Ass v t <- p = execute2 (execAssign v t s) ps
