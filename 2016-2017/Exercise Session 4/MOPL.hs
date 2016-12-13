@@ -5,7 +5,7 @@ data Statement = Ass String Term
 
 data Term = V String
     |I Int
-    |B String Term Term
+    |B (Int -> Int -> Int) Term Term
 
 --Exercise 2
 assign :: String -> Term -> Statement
@@ -21,13 +21,13 @@ varTerm :: String -> Term
 varTerm = V
 
 plus :: Term -> Term -> Term
-plus = B "Add"
+plus = B (+)
 
 times :: Term -> Term -> Term
-times = B "Mul"
+times = B (*)
 
 minus :: Term -> Term -> Term
-minus = B "Sub"
+minus = B (-)
 
 --Exercise 3
 type State = [(String,Int)]
@@ -48,9 +48,7 @@ evalTerm :: State -> Term -> Int
 evalTerm s t 
     | I x <- t = x
     | V x <- t = valueOf s x
-    | B "Add" x y <- t = (evalTerm s x) + (evalTerm s y)
-    | B "Sub" x y <- t = (evalTerm s x) - (evalTerm s y)
-    | B "Mul" x y <- t = (evalTerm s x) * (evalTerm s y)
+    | B f x y <- t = f (evalTerm s x) (evalTerm s y)
 
 --Exercise 5
 execAssign :: String -> Term -> State -> State
