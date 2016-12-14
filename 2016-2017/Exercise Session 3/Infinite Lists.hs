@@ -11,7 +11,7 @@ pythagorean :: [(Int, Int, Int)]
 pythagorean = [(a,floor . sqrt . fromIntegral $ c*c - a*a,c) | c <- [1..], a <- [1..c-1], (floor . sqrt . fromIntegral $ c*c - a*a) > a, a*a + (floor . sqrt . fromIntegral $ c*c - a*a)^2 == c*c]
 
 partialSums :: Num a => [a] -> [a]
-partialSums n = [sum $ take i n | i <- [1..]]
+partialSums (x:xs) = scanl (+) x xs
 
 moessner :: Int -> [Int]
 moessner n = helper n [1..]
