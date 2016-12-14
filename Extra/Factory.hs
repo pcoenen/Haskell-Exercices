@@ -1,6 +1,8 @@
 module Factory where
 import Data.List (sort)
 
+--Test Data
+
 expensiveCarStation :: Station Resource Car
 expensiveCarStation = machine [ ( Wheel , 4 ) , ( Paint , 2 ) , (BMWBody, 1 ) ]ExpensiveCar
 
