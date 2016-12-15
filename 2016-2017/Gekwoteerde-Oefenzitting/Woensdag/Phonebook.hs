@@ -101,7 +101,7 @@ addManyToBook (e:es) book = addManyToBook es b
 data Telephone =
   MkTelephone PhoneNumber (PhoneNumber -> IO ())
 
-number  :: Telephone -> PhoneNumber
+number :: Telephone -> PhoneNumber
 number (MkTelephone pn _) = pn
 
 receive :: Telephone -> PhoneNumber -> IO ()
@@ -112,6 +112,7 @@ callerID (MkPhoneBook (MkEntry n p) ns ps) = case findEntry p ps of
   Just (MkEntry name phone) -> MkTelephone phone (\p -> print p >> print "Ring ring!")
   Nothing -> case findEntry n ns of
     Just (MkEntry name phone) -> MkTelephone phone (\p -> print p >> print "Ring ring!")
+    Nothing -> MkTelephone [] (\p -> print p)
   
 
 -- 6. Calling someone
