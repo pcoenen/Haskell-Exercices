@@ -103,6 +103,7 @@ helperEntries b (l:ls) = helperEntries (addToBook l b) ls
 data Telephone =
   MkTelephone PhoneNumber (PhoneNumber -> IO ())
 
+number :: Telephone -> PhoneNumber
 number (MkTelephone pn _) = pn
 
 receive :: Telephone -> PhoneNumber -> IO ()
