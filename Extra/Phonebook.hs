@@ -53,17 +53,17 @@ data Assoc k
 
 -- b. Complete the instance of Index for Assoc
 instance Index Assoc where
-  empty = MkAssoc []
-  findEntry _ (MkAssoc []) = Nothing
-  findEntry s (MkAssoc ((k,v):l))
-      | s == k    = Just v
-      | otherwise = findEntry s (MkAssoc l)
+    empty = MkAssoc []
+    findEntry _ (MkAssoc []) = Nothing
+    findEntry s (MkAssoc ((k,v):l))
+        | s == k    = Just v
+        | otherwise = findEntry s (MkAssoc l)
 
-  singleton k x = MkAssoc [(k,x)]
-  (<+>) (MkAssoc xs) (MkAssoc ((k,v):l)) = case findEntry k (MkAssoc xs) of
-                                              Just q -> (<+>) (MkAssoc xs) (MkAssoc l)
-                                              Nothing -> (<+>) (MkAssoc ((k,v):xs)) (MkAssoc l)
-  (<+>) x (MkAssoc []) = x 
+    singleton k x = MkAssoc [(k,x)]
+    (<+>) (MkAssoc xs) (MkAssoc ((k,v):l)) = case findEntry k (MkAssoc xs) of
+                                                Just q -> (<+>) (MkAssoc xs) (MkAssoc l)
+                                                Nothing -> (<+>) (MkAssoc ((k,v):xs)) (MkAssoc l)
+    (<+>) x (MkAssoc []) = x 
 
 -- 3. Complete the definition of PhoneBook, names, phones and owner
 data PhoneBook = MkPhoneBook Entry (Assoc Name) (Assoc PhoneNumber) deriving (Eq,Show)
