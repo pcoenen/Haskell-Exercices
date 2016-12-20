@@ -25,20 +25,18 @@ showPhone :: PhoneNumber -> String
 showPhone = intercalate " " . map show
 
 -- -- a. Complete the definitions of Entry, name and phone
-data Entry 
-    = MkEntry Name PhoneNumber
- 
+data Entry
+  = MkEntry Name PhoneNumber
   deriving (Eq,Show)
 
 mkEntry :: Name -> PhoneNumber -> Entry
 mkEntry = MkEntry
 
 name :: Entry -> Name
-name (MkEntry x y) = x
+name (MkEntry x _) = x
 
 phone :: Entry -> PhoneNumber
-phone (MkEntry x y) = y
-
+phone (MkEntry _ y) = y 
 
 -- 2. Index
 
@@ -50,13 +48,13 @@ class Index i where
 
 -- a. Complete the definition of Assoc
 data Assoc k
-  = MkAssoc [(k,Entry)] | Empty
+  = MkAssoc [(k,Entry)]
   deriving (Eq,Show)
 
 -- b. Complete the instance of Index for Assoc
 instance Index Assoc where
     empty = MkAssoc []
-    findEntry s (MkAssoc []) = Nothing
+    findEntry _ (MkAssoc []) = Nothing
     findEntry s (MkAssoc ((k,v):l))
         | s == k    = Just v
         | otherwise = findEntry s (MkAssoc l)
@@ -71,14 +69,13 @@ instance Index Assoc where
 data PhoneBook = MkPhoneBook Entry (Assoc Name) (Assoc PhoneNumber) deriving (Eq,Show)
 
 names :: PhoneBook -> Assoc Name
-names (MkPhoneBook x y z) = y
+names (MkPhoneBook _ n _) = n
 
 phones :: PhoneBook -> Assoc PhoneNumber
-phones (MkPhoneBook x y z) = z
+phones (MkPhoneBook _ _ p) = p
 
 owner  :: PhoneBook -> Entry
-owner (MkPhoneBook x y z) = x
-  
+owner (MkPhoneBook o _ _) = o
   
 -- 4. Implement byName and byPhone, emptyBook, addToBook, fromEntries
 
@@ -92,7 +89,7 @@ emptyBook :: Entry -> PhoneBook
 emptyBook e = MkPhoneBook e empty empty
 
 addToBook :: Entry -> PhoneBook -> PhoneBook
-addToBook e (MkPhoneBook i n p) = MkPhoneBook i (n <+> (MkAssoc [(name e, e)])) (p <+> (MkAssoc [(phone e, e)]))
+addToBook e (MkPhoneBook i n p) = MkPhoneBook i (n <+> singleton (name e) e) (p <+> singleton (phone e) e) 
 
 fromEntries :: Entry -> [Entry] -> PhoneBook
 fromEntries o l = helperEntries (emptyBook o) l
@@ -106,7 +103,7 @@ helperEntries b (l:ls) = helperEntries (addToBook l b) ls
 data Telephone =
   MkTelephone PhoneNumber (PhoneNumber -> IO ())
 
-number  :: Telephone -> PhoneNumber
+number :: Telephone -> PhoneNumber
 number (MkTelephone pn _) = pn
 
 receive :: Telephone -> PhoneNumber -> IO ()
@@ -122,7 +119,6 @@ pf b n = do
         Just r -> putStrLn ("caller ID: " ++ (name r))
         Nothing -> print n
     putStrLn "Ring ring !"
-
 
 -- 6. Calling someone
 
@@ -167,3 +163,4 @@ instance Index Lookup where
     --findEntry s (MkLookup f) = f s
 
     --(<+>) (MkLookup x) (MkLookup y) = MkLookup (x.y)
+
