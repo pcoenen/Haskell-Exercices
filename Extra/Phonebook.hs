@@ -15,7 +15,7 @@ module Phonebook (
   Lookup)
 where  
 
-import Data.List (intercalate,lookup)
+import Data.List (intercalate)
 
 -- - 1. Entry
 type Name        = String
