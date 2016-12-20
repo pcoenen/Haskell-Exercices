@@ -93,9 +93,9 @@ test msg b
 
 type Results = (Sum Int, Sum Int, Sum Int) -- (Not implemented, failed, passed)
 
---instance Monoid a => Monoid (IO a) where
---  mempty = return mempty
---  mappend = liftM2 mappend
+instance Monoid a => Monoid (IO a) where
+  mempty = return mempty
+  mappend = liftM2 mappend
 
 startTests :: IO Results
 startTests = putStrLn "Testing your solutions" >> return (Sum 0, Sum 0, Sum 0)

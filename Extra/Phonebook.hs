@@ -1,3 +1,6 @@
+-- Pieter-Jan Coenen
+-- r0584179
+-- Informatica
 module Phonebook (
   Name,
   PhoneNumber,
@@ -27,14 +30,13 @@ data Entry
   deriving (Eq,Show)
 
 mkEntry :: Name -> PhoneNumber -> Entry
-mkEntry name ns = MkEntry name ns
+mkEntry = MkEntry
 
 name :: Entry -> Name
-name (MkEntry n _) = n
+name (MkEntry x _) = x
 
 phone :: Entry -> PhoneNumber
-phone (MkEntry _ p) = p 
-
+phone (MkEntry _ y) = y 
 
 -- 2. Index
 
@@ -51,18 +53,20 @@ data Assoc k
 
 -- b. Complete the instance of Index for Assoc
 instance Index Assoc where
-  -- complete this instance
-  empty = MkAssoc []
-  singleton k e = MkAssoc [(k,e)]
-  (<+>) (MkAssoc is) (MkAssoc js) = MkAssoc (is++js) -- Kan beter :) 
-  findEntry _ (MkAssoc []) = Nothing
-  findEntry k (MkAssoc es) = do
-    e <- lookup k es
-    return e 
+empty = MkAssoc []
+findEntry _ (MkAssoc []) = Nothing
+findEntry s (MkAssoc ((k,v):l))
+    | s == k    = Just v
+    | otherwise = findEntry s (MkAssoc l)
+
+singleton k x = MkAssoc [(k,x)]
+(<+>) (MkAssoc xs) (MkAssoc ((k,v):l)) = case findEntry k (MkAssoc xs) of
+                                            Just q -> (<+>) (MkAssoc xs) (MkAssoc l)
+                                            Nothing -> (<+>) (MkAssoc ((k,v):xs)) (MkAssoc l)
+(<+>) x (MkAssoc []) = x 
 
 -- 3. Complete the definition of PhoneBook, names, phones and owner
-data PhoneBook = MkPhoneBook Entry (Assoc Name) (Assoc PhoneNumber) deriving (Show)
-
+data PhoneBook = MkPhoneBook Entry (Assoc Name) (Assoc PhoneNumber) deriving (Eq,Show)
 
 names :: PhoneBook -> Assoc Name
 names (MkPhoneBook _ n _) = n
@@ -72,53 +76,65 @@ phones (MkPhoneBook _ _ p) = p
 
 owner  :: PhoneBook -> Entry
 owner (MkPhoneBook o _ _) = o
-
   
 -- 4. Implement byName and byPhone, emptyBook, addToBook, fromEntries
 
 byName :: Name -> PhoneBook -> Maybe Entry
-byName name (MkPhoneBook _ ns _) = findEntry name ns
+byName n p = findEntry n (names p)
 
 byPhone :: PhoneNumber -> PhoneBook -> Maybe Entry
-byPhone phone (MkPhoneBook _ _ ps) = findEntry phone ps 
+byPhone n p = findEntry n (phones p)
 
 emptyBook :: Entry -> PhoneBook
-emptyBook (MkEntry n p) = MkPhoneBook (MkEntry n p) (empty) (empty)
+emptyBook e = MkPhoneBook e empty empty
 
 addToBook :: Entry -> PhoneBook -> PhoneBook
-addToBook (MkEntry name phone) (MkPhoneBook o n p) = MkPhoneBook o (n <+> (singleton name (MkEntry name phone))) (p <+> (singleton phone (MkEntry name phone)))
+addToBook e (MkPhoneBook i n p) = MkPhoneBook i (n <+> singleton (name e) e) (p <+> singleton (phone e) e) 
 
 fromEntries :: Entry -> [Entry] -> PhoneBook
-fromEntries (MkEntry name phone) es = addManyToBook es (emptyBook (MkEntry name phone))
+fromEntries o l = helperEntries (emptyBook o) l
 
-addManyToBook :: [Entry] -> PhoneBook -> PhoneBook
-addManyToBook [] book = book
-addManyToBook (e:es) book = addManyToBook es b
-  where b = addToBook e book
+helperEntries :: PhoneBook -> [Entry] -> PhoneBook
+helperEntries b [] = b
+helperEntries b (l:ls) = helperEntries (addToBook l b) ls
 
 -- 5. Implement the callerID function.
 
 data Telephone =
   MkTelephone PhoneNumber (PhoneNumber -> IO ())
 
-number :: Telephone -> PhoneNumber
 number (MkTelephone pn _) = pn
 
 receive :: Telephone -> PhoneNumber -> IO ()
 receive (MkTelephone _ r) = r
 
 callerID :: PhoneBook -> Telephone
-callerID (MkPhoneBook (MkEntry n p) ns ps) = case findEntry p ps of
-  Just (MkEntry name phone) -> MkTelephone phone (\p -> print p >> print "Ring ring!")
-  Nothing -> case findEntry n ns of
-    Just (MkEntry name phone) -> MkTelephone phone (\p -> print p >> print "Ring ring!")
-    Nothing -> MkTelephone [] (\p -> print p)
-  
+callerID b = MkTelephone (phone $ owner b) (pf b)
+
+pf :: PhoneBook -> PhoneNumber -> IO ()
+
+pf b n = do
+    case byPhone n b of
+        Just r -> putStrLn ("caller ID: " ++ (name r))
+        Nothing -> print n
+    putStrLn "Ring ring !"
 
 -- 6. Calling someone
 
 call :: PhoneBook -> [Telephone] -> IO ()
-call = do undefined
+call b t = do
+        putStrLn "Who would you like to call"
+        name <- getLine
+        case byName name b of
+            Just n -> case search (phone n) t of
+                        Just q -> receive q (phone $ owner b) 
+                        Nothing -> print "The number you dailed does not exist !"
+            Nothing -> print "No such Entry"
+
+search n [] = Nothing
+search n (x:xs)
+    | number x == n = Just x
+    | otherwise     = search n xs
 
 -- examples -- do NOT change
 
@@ -142,4 +158,8 @@ telephones = map callerID [billbook,bobbook,jebbook,valbook]
 data Lookup k = MkLookup (k -> Maybe Entry)
 
 instance Index Lookup where
-  -- complete this instance
+   --empty = MkLookup Nothing
+    --findEntry s (MkLookup f) = f s
+
+    --(<+>) (MkLookup x) (MkLookup y) = MkLookup (x.y)
+
