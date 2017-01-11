@@ -1,4 +1,5 @@
-module Template where
+
+module ArithmeticExpressions where
 
 -- * Arithmetic Expressions
 -- ----------------------------------------------------------------------------
@@ -10,14 +11,11 @@ data Exp = Const Int
   deriving (Show, Eq)
 
 eval :: Exp -> Int
-
-eval (Const x) = x
-
-eval (Add x y) = eval x + eval y
-
-eval (Sub x y) = (eval x) - (eval y)
-
-eval (Mul x y) = eval x * eval y    
+eval e
+    | Const x <- e = x
+    | Add x y <- e = (eval x) + (eval y)
+    | Sub x y <- e = (eval x) - (eval y)
+    | Mul x y <- e = (eval x) * (eval y)
 
 data Inst = IPush Int | IAdd | ISub | IMul
   deriving (Show, Eq)
@@ -29,24 +27,20 @@ runtimeError :: Stack
 runtimeError = error "Runtime error."
 
 execute :: Inst -> Stack -> Stack
-
-execute x (een:twee:rest)
-    | x == IAdd = ((een + twee):rest)
-    | x == ISub = ((twee - een):rest)
-    | x == IMul = ((een * twee):rest)
-
-execute (IPush x) (rest) = x : rest
+execute (IPush x) s = x:s
+execute i (f:s:r)
+    |IAdd  <-   i = (f + s) : r
+    |ISub <-    i = (s - f) : r
+    |IMul <-    i = (f * s) : r
 
 run :: Prog -> Stack -> Stack
-
-run [] stack = stack
-
-run (x:xs) stack = run xs (execute x stack)
+run [] s = s 
+run (x:xs) s = run xs (execute x s) 
 
 compile :: Exp -> Prog
+compile  e
+    | Const x <- e = [IPush x]
+    | Add x y <- e = (compile x) ++ (compile y) ++ [IAdd]
+    | Sub x y <- e = (compile x) ++ (compile y) ++ [ISub]
+    | Mul x y <- e = (compile x) ++ (compile y) ++ [IMul]
 
-compile x
-    | Add one two <- x = (compile one) ++ (compile two) ++ [IAdd]
-    | Sub one two <- x = (compile one) ++ (compile two) ++ [ISub]
-    | Mul one two <- x = (compile one) ++ (compile two) ++ [IMul]
-    | Const y <- x = [IPush y]
