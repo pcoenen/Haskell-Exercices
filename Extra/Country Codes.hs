@@ -6,7 +6,6 @@ module CountryCodes where
 import Data.Bits (setBit, testBit)
 import Data.Char (ord, chr)
 import Data.Word (Word32)
-import Data.List
 
 encodedCountryCodes :: [Word32]
 encodedCountryCodes
@@ -16,85 +15,32 @@ encodedCountryCodes
 
 
 -- Opdracht 1
-abc :: [Char]
-abc = ['A'..'Z']
 decodeRow :: Word32 -> [Char]
-decodeRow x = check x 0
-
-check :: Word32 -> Int -> [Char]
-check _ 26 = []
-check x n
-    | testBit x n   = (abc !! n) : check x (n+1)
-    | otherwise     = check x (n+1)
-    
+decodeRow w = [l | (l,i) <- zip ['A'..'Z'] [0..25], testBit w i]
 
 decode :: [Word32] -> [String]
-decode = decodeHelp 0
-
-decodeHelp :: Int -> [Word32] -> [String]
-decodeHelp 26 _ = []
-decodeHelp _ [] = []
-decodeHelp i (x:xs) = (combine (abc !! i) (decodeRow x)) ++ decodeHelp (i+1) xs
-
-combine :: Char -> String -> [String]
-combine _ [] = []
-combine c (x:xs) = ([c] ++ [x]) : (combine c xs)
+decode list = [l : s : [] | (l,i) <- zip ['A'..'Z'] list, s <- decodeRow i]
 
 
 -- Opdracht 2
 fillInGaps :: Eq ref => [a] -> [ref] -> (a -> ref) -> (ref -> a) -> [a]
-fillInGaps [] [] ar ra = []
-fillInGaps (a:as) [] ar ra = []
-fillInGaps [] (r:rs) ar ra = (ra r) : fillInGaps [] rs ar ra
-fillInGaps (a:as) (r:rs) ar ra
-    | ar a == r = a : fillInGaps as rs ar ra
-    | otherwise = (ra r) : fillInGaps (a:as) rs ar ra
-
-helpABC :: [(Char,Int)]
-helpABC = [(abc !! i,i) | i <- [0..25]]
+fillInGaps l [] _ _ = []
+fillInGaps [] r _ rl = map rl r
+fillInGaps (l:ls) (r:rs) lr rl
+    | lr l == r = l : fillInGaps ls rs lr rl
+    | otherwise = rl r : fillInGaps (l:ls) rs lr rl
 
 encodeChars :: [Char] -> Word32
 encodeChars [] = 0
-encodeChars xs = sum $ map (\x -> 2^x) $ map (\x -> getIndex x abc 0) xs
-
-getIndex _ [] _ = -1
-getIndex v (x:xs) i
-    | v == x    = i
-    | otherwise = getIndex v xs (i+1)
-  
+encodeChars list = foldl setBit 0 [v | e <- list, (l,v) <- zip ['A'..'Z'] [0..], e == l]
 
 encodeRow :: [String] -> Word32
-encodeRow = encodeChars . map (\ [x,y] -> y) 
+encodeRow list = encodeChars [e | (_:e:[]) <- list] 
 
 encode :: [String] -> [Word32]
-encode (i:is) = map encodeRow $ fillInGaps (split ((\[a,b] -> a)i) is [i]) ['A'..'Z'] (\([a,_]:_) -> a) (\x -> [])
-
-
-
-split :: Char -> [String] -> [String] -> [[String]]
-split c [] a = [a]
-split c (x:xs) a
-    |(\[a,_] -> a) x == c   = split c xs (x:a)
-    | otherwise             = a : split ((\[a,_] -> a)x) xs [x]
+encode list = map encodeRow [filter (\(e1:_:[]) -> e1 == l) list | l <- ['A'..'Z']]
 
 
 -- Opdracht 3
 printCodes :: [String] -> IO ()
-
-printCodes x = printHelp1 (prepare x)
-
-prepare (i:is) = map (\x -> fillInGaps (sort x) ['A'..'Z'] (\[_,a] -> a) (\ _ -> ".."))(split ((\[a,b] -> a)i) is [i])
-
-printHelp1 (x:xs) = do
-            printStart x
-            printHelp1 xs
-
-printStart (x:xs) = do
-            putStrLn (x ++ " ")
-            printHelp xs
-            
-printHelp :: [String] -> IO ()
-printHelp [] = return ()
-printHelp (x:xs) = do
-                putStr (x ++ " ")
-                printHelp xs
+printCodes list = mapM_ putStrLn $ map (\v -> concat $ map (\x -> x ++ " ") v) (map (\v -> fillInGaps v ['A'..'Z'] (\(_:e:[]) -> e) (\x -> "..")) [filter (\(e1:_:[]) -> e1 == l) list | l <- ['A'..'Z']])
