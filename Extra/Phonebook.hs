@@ -151,7 +151,7 @@ data Lookup k = MkLookup (k -> Maybe Entry)
 
 instance Index Lookup where
   findEntry k (MkLookup f) = f k
-  empty = MkLookup (\x -> lookup x [])
+  empty = MkLookup (\x -> Nothing)
   singleton k e = MkLookup (\x -> lookup x [(k,e)])
   (<+>) (MkLookup f1) (MkLookup f2) = MkLookup (\x -> combine f1 f2 x)
 
