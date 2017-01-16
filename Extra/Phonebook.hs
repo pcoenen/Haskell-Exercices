@@ -103,30 +103,30 @@ receive :: Telephone -> PhoneNumber -> IO ()
 receive (MkTelephone _ r) = r
 
 callerID :: PhoneBook -> Telephone
-callerID b = MkTelephone (phone $ owner b) (\p -> printNumber b p)
+callerID (MkPhoneBook e _ assoc) = MkTelephone (phone e) (\p -> function p assoc)
 
-printNumber :: PhoneBook -> PhoneNumber -> IO ()
-printNumber b p = case byPhone p b of
+function :: PhoneNumber -> Assoc PhoneNumber -> IO ()
+function p assoc = case findEntry p assoc of
                     Just x -> mapM_ putStrLn ["caller ID: " ++ name x, "Ring ring!"]
-                    Nothing -> mapM_ putStrLn ["caller ID: " ++ phoneToText p , "Ring ring!"]
-phoneToText (p:ps) = foldl (\a b -> a ++ " " ++ show b) (show p)  ps             
+                    Nothing -> mapM_ putStrLn ["caller ID: " ++ showPhone p, "Ring ring!"]
 
 -- 6. Calling someone
 
 call :: PhoneBook -> [Telephone] -> IO ()
-call b l = do 
+call (MkPhoneBook pn assoc _) list = do 
         putStrLn "Who would you like to call?"
         name <- getLine
-        case byName name b of
-            Just e -> case search e l of
-                        Just t -> receive t (phone $owner b)
-                        Nothing -> putStrLn "The number you dialed does not exist."
-            Nothing -> putStrLn "No such entry!" 
+        case findEntry name assoc of
+            Just entry -> case findTelephone entry list of
+                            Just t -> receive t (phone pn)
+                            Nothing -> putStrLn "The number you dialed does not exist."
+            Nothing -> putStrLn "No such entry!"
 
-search e [] = Nothing
-search e (t:ts)
-    |number t == phone e    = Just t
-    |otherwise              = search e ts
+findTelephone :: Entry -> [Telephone] -> Maybe Telephone
+findTelephone _ [] = Nothing
+findTelephone entry (t:ts)
+    |number t == phone entry    = Just t
+    |otherwise                  = findTelephone entry ts
 
 -- examples -- do NOT change
 
@@ -150,13 +150,11 @@ telephones = map callerID [billbook,bobbook,jebbook,valbook]
 data Lookup k = MkLookup (k -> Maybe Entry)
 
 instance Index Lookup where
-  findEntry k (MkLookup f) = f k
+  findEntry key (MkLookup f) = f key
   empty = MkLookup (\x -> Nothing)
   singleton k e = MkLookup (\x -> lookup x [(k,e)])
   (<+>) (MkLookup f1) (MkLookup f2) = MkLookup (\x -> combine f1 f2 x)
 
-combine :: (k -> Maybe Entry) -> (k -> Maybe Entry) -> k -> Maybe Entry
-combine f1 f2 x = case f1 x of
-                    Just y -> Just y
-                    Nothing -> f2 x
-                
+combine f1 f2 k = case f1 k of
+                    Just x -> Just x
+                    Nothing -> f2 k
